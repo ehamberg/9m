@@ -74,6 +74,11 @@ nineM db = do
   Scotty.get  "/show/:key" (getShowH db)
   Scotty.post "/create"    (postCreateH db)
 
+  -- static svg files
+  Scotty.get  "/static/svg/:file" $ do
+    setHeader "content-type" "image/svg+xml"
+    param "file" >>= file . ("static/svg/" ++)
+
 main :: IO ()
 main = bracket
   (openLocalState (KeyValue Map.empty))

@@ -19,8 +19,30 @@ base body = [shamlet|
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <style>
+      h1 {
+        font-weight: bolder;
+        font-size: 5em;
+      }
+      div.header {
+        margin-bottom: 50px;
+      }
+      div.result {
+        padding: 30px;
+        border-radius: 10px;
+        background-color: #ECECEC;
+      }
+      .large {
+        font-size: 2em;
+      }
+      .truncate {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     <title>
-      9m – URL Shortener
+      9m URL Shortener
   <body>
     <div class="container">
       #{header}
@@ -31,33 +53,34 @@ base body = [shamlet|
 
 header :: Markup
 header = [shamlet|
-<div class="col-md-offset-3 col-md-6 col-xs-12">
-  <h1 class="text-center">9m – A URL Shortener for the Unicode Age 💻
+<div class="col-md-offset-3 col-md-6 col-xs-12 header">
+  <h1 class="text-center">
+    <a href="/">
+      <img alt="9m" width="80%" src="/static/svg/logo.svg">
 |]
 
 indexTpl :: Text
 indexTpl = renderHtml $ base body
   where body = [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
-  <form role="form" method="post" action="/create">
-    <div class="form-group">
-      <div class="row">
-        <input type="url" class="form-control" name="url" id="inputUrl" placeholder="URL to shorten">
-      <div class="row">
-        <p class="text-center">
-          <button type="submit" class="btn btn-primary btn-lg btn-block">Create short link</button>
+  <div class="row">
+    <div class="col-md-12">
+      <form role="form" method="post" action="/create">
+        <div class="input-group input-group-lg">
+          <input type="text" class="form-control" name="url" placeholder="URL to shorten">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="submit">Shorten</button>
 |]
 
 
 showTpl :: Text -> Text -> Text
-showTpl key value = renderHtml $ base body
+showTpl key url = renderHtml $ base body
   where body = [shamlet|
-<div class="col-md-offset-3 col-md-6 col-xs-12">
-  <div class="row">
-    <a href="http://9m.no/#{key}">
-      http://9m.no/#{key}
-    →
-    <a href="#{value}">
-      #{value}
-    <button type="button" class="btn btn-success">📋 Copy</button>
+<div class="col-md-offset-2 col-md-8 col-xs-12 result">
+  <div class="row text-center large">
+    http://9m.no/#{key}
+  <div class="row text-center large">
+    ⇩
+  <div class="row text-center large truncate">
+    #{url}
 |]
