@@ -7,12 +7,11 @@ import Control.Exception (bracket)
 import Control.Monad.Reader
 import Data.Acid
 import Data.Char
-import Network.HTTP.Types.Status
+import Network.HTTP.Types
 import System.Random
 import Web.Scotty hiding (get, put)
 import qualified Data.Map as Map
 import Data.Text.Lazy hiding (find)
-import qualified Web.Scotty as Scotty
 
 import DataLayer
 import Templates
@@ -69,13 +68,13 @@ getShowH db = do
 
 nineM :: AcidState KeyValue -> ScottyM ()
 nineM db = do
-  Scotty.get  "/"          getIndexH
-  Scotty.get  "/:key"      (getRedirectH db)
-  Scotty.get  "/show/:key" (getShowH db)
-  Scotty.post "/create"    (postCreateH db)
+  addroute GET  "/"          getIndexH
+  addroute GET  "/:key"      (getRedirectH db)
+  addroute GET  "/show/:key" (getShowH db)
+  addroute POST "/create"    (postCreateH db)
 
   -- static svg files
-  Scotty.get  "/static/svg/:file" $ do
+  addroute GET "/static/svg/:file" $ do
     setHeader "content-type" "image/svg+xml"
     param "file" >>= file . ("static/svg/" ++)
 
