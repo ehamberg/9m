@@ -52,8 +52,8 @@ getRedirectH db = do
     mbVal <- liftIO $ find db key
     case mbVal of
       Nothing    -> status status404
-      Just value -> redirect' value
-  where redirect' url = do
+      Just value -> performRedirect value
+  where performRedirect url = do
           setHeader "cache-control" "no-cache, no-store, max-age=0, must-revalidate"
           setHeader "pragma" "no-cache"
           setHeader "location" url
