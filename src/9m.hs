@@ -14,7 +14,7 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Web.Scotty hiding (get, put)
 import qualified Data.Map as Map
-import qualified Data.Text.Lazy as T
+import Data.Text.Lazy hiding (find)
 import qualified Web.Scotty as Scotty
 
 import DataLayer
@@ -45,14 +45,14 @@ postCreateH db = do
           insert db k u
           insert db u k
           return k
-    redirect $ "/show/" `T.append` key
+    redirect $ "/show/" `append` key
   where prefixHttp url
-          | "http://" `T.isPrefixOf` url  = url
-          | "https://" `T.isPrefixOf` url = url
-          | otherwise = "http://" `T.append` url
+          | "http://" `isPrefixOf` url  = url
+          | "https://" `isPrefixOf` url = url
+          | otherwise = "http://" `append` url
 
-randomKey :: Int -> IO T.Text
-randomKey n = liftM T.pack $ replicateM n randomPrintChar
+randomKey :: Int -> IO Text
+randomKey n = liftM pack $ replicateM n randomPrintChar
   where randomPrintChar = do
             c <- randomRIO ('A', '\128709')
             if isPrint c
