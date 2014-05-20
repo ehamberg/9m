@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module Main where
 
@@ -10,28 +9,16 @@ import Data.Acid
 import Data.Char
 import Network.HTTP.Types.Status
 import System.Random
-import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Hamlet
 import Web.Scotty hiding (get, put)
 import qualified Data.Map as Map
 import Data.Text.Lazy hiding (find)
 import qualified Web.Scotty as Scotty
 
 import DataLayer
+import Templates
 
 getIndexH :: ActionM ()
-getIndexH = html $ renderHtml [shamlet|
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>
-      9m – A URL Shortener for the Unicode Age
-  <body>
-    <p>
-      <form method="post" action="/create">
-        URL to shorten:
-        <input type="text" name="url">
-|]
+getIndexH = html indexTpl
 
 postCreateH :: AcidState KeyValue -> ActionM ()
 postCreateH db = do
@@ -78,20 +65,7 @@ getShowH db = do
     mbVal <- liftIO $ find db key
     case mbVal of
       Nothing    -> status status404
-      Just value -> html $ renderHtml [shamlet|
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>
-      9m – A URL Shortener for the Unicode Age
-  <body>
-    <p>
-      <a href="http://9m.no/#{key}">
-        http://9m.no/#{key}
-      →
-      <a href="#{value}">
-        #{value}
-|]
+      Just value -> html $ showTpl key value
 
 nineM :: AcidState KeyValue -> ScottyM ()
 nineM db = do

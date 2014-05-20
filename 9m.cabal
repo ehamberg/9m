@@ -25,3 +25,4 @@ executable 9m
                  , text         >= 1.1  && < 1.2
                  , shakespeare  >= 2.0  && < 2.1
                  , blaze-html   >= 0.7  && < 0.8
+                 , blaze-markup >= 0.6  && < 0.7
