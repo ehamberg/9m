@@ -1,6 +1,8 @@
 name:          9m
 version:       0.1.0
 synopsis:      Unicode URI shortener
+license:       BSD3
+License-file:  LICENSE
 author:        Erlend Hamberg
 maintainer:    erlend@hamberg.no
 category:      Network
