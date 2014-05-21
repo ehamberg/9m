@@ -62,7 +62,6 @@ base body = [shamlet|
 
         ga('create', 'UA-304186-3', '9m.no');
         ga('send', 'pageview');
-      </script>
 |]
 
 header :: Markup
