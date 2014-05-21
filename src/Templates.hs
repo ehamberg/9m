@@ -80,7 +80,7 @@ footer = [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12 text-center">
     <a href="https://www.github.com/ehamberg/9m">
-      Source
+      Code
     ◇
     <a href="/about">
       About
