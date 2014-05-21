@@ -4,6 +4,7 @@
 module Templates
   ( indexTpl
   , showTpl
+  , aboutTpl
   )
 where
 
@@ -41,12 +42,16 @@ base body = [shamlet|
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      hr {
+        margin-bottom: 3px;
+      }
     <title>
       9m URL Shortener
   <body>
     <div class="container">
       #{header}
       #{body}
+      #{footer}
       <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
       <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js">
       <script>
@@ -66,6 +71,20 @@ header = [shamlet|
   <h1 class="text-center">
     <a href="/">
       <img alt="9m" width="80%" src="/static/svg/logo.svg">
+|]
+
+footer :: Markup
+footer = [shamlet|
+<div class="row">
+  <div class="col-md-offset-3 col-md-6 col-xs-12">
+    <hr>
+<div class="row">
+  <div class="col-md-offset-3 col-md-6 col-xs-12 text-center">
+    <a href="https://www.github.com/ehamberg/9m">
+      Source
+    ◇
+    <a href="/about">
+      About
 |]
 
 indexTpl :: Text
@@ -92,4 +111,36 @@ showTpl key url = renderHtml $ base body
     ⇩
   <div class="row text-center large truncate">
     #{url}
+|]
+
+aboutTpl :: Text
+aboutTpl = renderHtml $ base body
+  where body = [shamlet|
+<div class="row">
+  <div class="col-md-offset-3 col-md-6 col-xs-12">
+    <h2 class="text-center">
+      About 9m
+<div class="row">
+  <div class="col-md-offset-3 col-md-6 col-xs-12">
+    <ul>
+      <li>
+        Made slightly – but not completely – tounge-in-cheek by
+        <a href="https://twitter.com/ehamberg">@ehamberg</a>.
+      <li>
+        Picks two random unicode code points between ‘A’ (<code>U+0041
+        LATIN CAPITAL LETTER A</code>) and ‘🛅’ (<code>U+1F6C5 LEFT
+        LUGGAGE</code>) for the short URL, which seems to be an okayish
+        compromise between having many characters and having some hope of
+        being supported by a modern font.
+      <li>
+        The number of printable characters between <code>U+0041</code> and
+        <code>U+1F6C5</code> is 61262, according to GHC 7.8.2:
+        <pre>
+          λ> (length . filter isPrint) [chr 0x41 .. chr 0x1F6C5]
+          61229
+      <li>
+        The
+        <a href="https://github.com/ehamberg/9m">
+          source code
+        is on github.
 |]

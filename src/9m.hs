@@ -19,6 +19,9 @@ import Templates
 getIndexH :: ActionM ()
 getIndexH = html indexTpl
 
+getAboutH :: ActionM ()
+getAboutH = html aboutTpl
+
 postCreateH :: AcidState KeyValue -> ActionM ()
 postCreateH db = do
     u <- prefixHttp `fmap` param "url"
@@ -69,6 +72,7 @@ getShowH db = do
 nineM :: AcidState KeyValue -> ScottyM ()
 nineM db = do
   addroute GET  "/"          getIndexH
+  addroute GET  "/about"     getAboutH
   addroute GET  "/:key"      (getRedirectH db)
   addroute GET  "/show/:key" (getShowH db)
   addroute POST "/create"    (postCreateH db)
