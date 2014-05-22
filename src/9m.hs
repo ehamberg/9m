@@ -3,6 +3,7 @@
 
 module Main where
 
+import Prelude hiding (filter)
 import Control.Exception (bracket)
 import Control.Monad.Reader
 import Data.Acid
@@ -24,7 +25,7 @@ getAboutH = html aboutTpl
 
 postCreateH :: AcidState KeyValue -> ActionM ()
 postCreateH db = do
-    u <- prefixHttp `fmap` param "url"
+    u <- (prefixHttp . filter (' '<)) `fmap` param "url"
     key <- liftIO $ do
       existing <- find db u
       case existing of
