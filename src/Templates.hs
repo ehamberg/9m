@@ -133,7 +133,7 @@ aboutTpl = renderHtml $ base body
         being supported by a modern font.
       <li>
         The number of printable characters between <code>U+0041</code> and
-        <code>U+1F6C5</code> is 61262, according to GHC 7.8.2:
+        <code>U+1F6C5</code> is 61229, according to GHC 7.8.2:
         <pre>
           λ> (length . filter isPrint) [chr 0x41 .. chr 0x1F6C5]
           61229
