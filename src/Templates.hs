@@ -123,7 +123,7 @@ aboutTpl = renderHtml $ base body
   <div class="col-md-offset-3 col-md-6 col-xs-12">
     <ul>
       <li>
-        Made slightly – but not completely – tounge-in-cheek by
+        Made slightly – but not completely – tongue-in-cheek by
         <a href="https://twitter.com/ehamberg">@ehamberg</a>.
       <li>
         Picks two random unicode code points between ‘A’ (<code>U+0041
