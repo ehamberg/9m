@@ -15,4 +15,4 @@ To install:
 2. `cabal install --only-dependencies`
 3. `cabal build`
 4. `dist/build/9m/9m`
-5. `open 'http://localhost:7000`
+5. `open 'http://localhost:7000'`
