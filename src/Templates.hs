@@ -4,6 +4,7 @@
 module Templates
   ( indexTpl
   , showTpl
+  , selfTpl
   , aboutTpl
   )
 where
@@ -99,6 +100,16 @@ indexTpl = renderHtml $ base body
             <button class="btn btn-primary" type="submit">Shorten</button>
 |]
 
+
+selfTpl :: Text
+selfTpl = renderHtml $ base body
+  where body = [shamlet|
+<div class="col-md-offset-2 col-md-8 col-xs-12 result">
+  <div class="row text-center large">
+    http://9m.no/
+  <div class="row text-center large">
+    ↻
+|]
 
 showTpl :: Text -> Text -> Text
 showTpl key url = renderHtml $ base body
