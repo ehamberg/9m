@@ -121,6 +121,8 @@ showTpl key url = renderHtml $ base body
     ⇩
   <div class="row text-center large truncate">
     #{url}
+  <div class="row text-center large">
+    <img src="http://qrfree.kaywa.com/?l=1&s=8&d=#{url}" />
 |]
 
 aboutTpl :: Text
