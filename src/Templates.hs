@@ -90,7 +90,7 @@ footer = [shamlet|
 |]
 
 indexTpl :: Text
-indexTpl = renderHtml $ base body Nothing
+indexTpl = renderHtml $ base body (Just "document.forms[0].url.focus();")
   where body = [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
   <div class="row">
