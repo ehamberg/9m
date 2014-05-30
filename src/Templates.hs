@@ -23,6 +23,22 @@ $doctype 5
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script type="text/javascript">
+      // Script snippet courtesy of user 'Igal' who posted this on StackOverflow at
+      // http://stackoverflow.com/questions/1173194/select-all-div-text-with-single-mouse-click
+      function selectText( containerid ) {
+          var node = document.getElementById( containerid );
+          if ( document.selection ) {
+              var range = document.body.createTextRange();
+              range.moveToElementText( node  );
+              range.select();
+          } else if ( window.getSelection ) {
+              var range = document.createRange();
+              range.selectNodeContents( node );
+              window.getSelection().removeAllRanges();
+              window.getSelection().addRange( range );
+          }
+      }
     <style>
       h1 {
         font-weight: bolder;
@@ -114,10 +130,10 @@ selfTpl = renderHtml $ base body Nothing
 |]
 
 showTpl :: Text -> Text -> Text
-showTpl key url = renderHtml $ base body Nothing
+showTpl key url = renderHtml $ base body (Just "selectText('shortenedUrl');")
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
-  <div class="row text-center large">
+  <div id="shortenedUrl" class="row text-center large">
     http://9m.no/#{key}
   <div class="row text-center large">
     ⇩
