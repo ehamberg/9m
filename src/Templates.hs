@@ -13,9 +13,10 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Data.Text.Lazy
 import Text.Blaze.Internal (Markup)
+import Data.Maybe (fromJust, isJust)
 
-base :: Markup -> Markup
-base body = [shamlet|
+base :: Markup -> Maybe Text -> Markup
+base body onloadAction = [shamlet|
 $doctype 5
 <html>
   <head>
@@ -49,7 +50,7 @@ $doctype 5
       }
     <title>
       9m URL Shortener
-  <body>
+  <body :isJust onloadAction:onload="#{fromJust onloadAction}">
     <div class="container">
       #{header}
       #{body}
@@ -89,7 +90,7 @@ footer = [shamlet|
 |]
 
 indexTpl :: Text
-indexTpl = renderHtml $ base body
+indexTpl = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
   <div class="row">
@@ -103,7 +104,7 @@ indexTpl = renderHtml $ base body
 
 
 selfTpl :: Text
-selfTpl = renderHtml $ base body
+selfTpl = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
@@ -113,7 +114,7 @@ selfTpl = renderHtml $ base body
 |]
 
 showTpl :: Text -> Text -> Text
-showTpl key url = renderHtml $ base body
+showTpl key url = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
@@ -125,7 +126,7 @@ showTpl key url = renderHtml $ base body
 |]
 
 aboutTpl :: Text
-aboutTpl = renderHtml $ base body
+aboutTpl = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12">
