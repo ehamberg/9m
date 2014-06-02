@@ -13,14 +13,32 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 import Data.Text.Lazy
 import Text.Blaze.Internal (Markup)
+import Data.Maybe (fromJust, isJust)
 
-base :: Markup -> Markup
-base body = [shamlet|
+base :: Markup -> Maybe Text -> Markup
+base body onloadAction = [shamlet|
+$doctype 5
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script type="text/javascript">
+      // Script snippet courtesy of user 'Igal' who posted this on StackOverflow at
+      // http://stackoverflow.com/questions/1173194/select-all-div-text-with-single-mouse-click
+      function selectText( containerid ) {
+          var node = document.getElementById( containerid );
+          if ( document.selection ) {
+              var range = document.body.createTextRange();
+              range.moveToElementText( node  );
+              range.select();
+          } else if ( window.getSelection ) {
+              var range = document.createRange();
+              range.selectNodeContents( node );
+              window.getSelection().removeAllRanges();
+              window.getSelection().addRange( range );
+          }
+      }
     <style>
       h1 {
         font-weight: bolder;
@@ -48,7 +66,7 @@ base body = [shamlet|
       }
     <title>
       9m URL Shortener
-  <body>
+  <body :isJust onloadAction:onload="#{fromJust onloadAction}">
     <div class="container">
       #{header}
       #{body}
@@ -88,7 +106,7 @@ footer = [shamlet|
 |]
 
 indexTpl :: Text
-indexTpl = renderHtml $ base body
+indexTpl = renderHtml $ base body (Just "document.forms[0].url.focus();")
   where body = [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
   <div class="row">
@@ -102,7 +120,7 @@ indexTpl = renderHtml $ base body
 
 
 selfTpl :: Text
-selfTpl = renderHtml $ base body
+selfTpl = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
@@ -112,10 +130,10 @@ selfTpl = renderHtml $ base body
 |]
 
 showTpl :: Text -> Text -> Text
-showTpl key url = renderHtml $ base body
+showTpl key url = renderHtml $ base body (Just "selectText('shortenedUrl');")
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
-  <div class="row text-center large">
+  <div id="shortenedUrl" class="row text-center large">
     http://9m.no/#{key}
   <div class="row text-center large">
     ⇩
@@ -124,7 +142,7 @@ showTpl key url = renderHtml $ base body
 |]
 
 aboutTpl :: Text
-aboutTpl = renderHtml $ base body
+aboutTpl = renderHtml $ base body Nothing
   where body = [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12">
