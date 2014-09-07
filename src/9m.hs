@@ -5,15 +5,17 @@
 module Main where
 
 import Prelude hiding (filter, length, any)
-import Control.Exception (bracket)
-import Control.Monad.Reader
-import Data.Acid
+import Control.Monad (liftM, replicateM)
+import Control.Monad.IO.Class (liftIO)
 import Data.Char
 import Network.HTTP.Types
 import System.Random (randomRIO)
 import Web.Scotty hiding (get, put)
-import qualified Data.Map as Map
 import Data.Text.Lazy hiding (find)
+import Database.Persist.Sqlite (withSqlitePool)
+
+import Control.Monad.Logger
+import Control.Monad.Trans.Resource
 
 import DataLayer
 import Templates
@@ -24,29 +26,28 @@ getIndexH = html indexTpl
 getAboutH :: ActionM ()
 getAboutH = html aboutTpl
 
-postCreateH :: AcidState KeyValue -> ActionM ()
-postCreateH db = do
+postCreateH :: ConnectionPool -> ActionM ()
+postCreateH pool = do
     u <- prefixHttp `fmap` param "url"
     if | length u > 200 || any (<' ') u -> badRequest
        | "http://9m.no" `isPrefixOf` u  -> redirect "/self"
        | "https://9m.no" `isPrefixOf` u -> redirect "/self"
-       | otherwise                      -> insertAndRedirect u db
+       | otherwise                      -> insertAndRedirect u pool
   where badRequest = status status400 >> text "Bad request"
         prefixHttp url
           | "http://" `isPrefixOf` url  = url
           | "https://" `isPrefixOf` url = url
           | otherwise = "http://" `append` url
 
-insertAndRedirect :: Text -> AcidState KeyValue -> ActionM ()
-insertAndRedirect url db = do
+insertAndRedirect :: Text -> ConnectionPool -> ActionM ()
+insertAndRedirect url pool = do
     key <- liftIO $ do
-      existing <- find db url
+      existing <- find pool url
       case existing of
         Just v  -> return v
         Nothing -> do
           k <- randomKey 2
-          insert db k url
-          insert db url k
+          insert pool k url
           return k
     redirect $ "/show/" `append` key
 
@@ -58,10 +59,10 @@ randomKey n = liftM pack $ replicateM n randomPrintChar
               then return c
               else randomPrintChar
 
-getRedirectH :: AcidState KeyValue -> ActionM ()
-getRedirectH db = do
+getRedirectH :: ConnectionPool -> ActionM ()
+getRedirectH pool = do
     key <- param "key"
-    mbVal <- liftIO $ find db key
+    mbVal <- liftIO $ find pool key
     case mbVal of
       Nothing    -> status status404
       Just value -> performRedirect value
@@ -71,10 +72,10 @@ getRedirectH db = do
           setHeader "location" url
           status status301
 
-getShowH :: AcidState KeyValue -> ActionM ()
-getShowH db = do
+getShowH :: ConnectionPool -> ActionM ()
+getShowH pool = do
     key <- param "key" `rescue` const next
-    mbVal <- liftIO $ find db key
+    mbVal <- liftIO $ find pool key
     case mbVal of
       Nothing    -> status status404
       Just value -> html $ showTpl key value
@@ -82,14 +83,14 @@ getShowH db = do
 getSelfH :: ActionM ()
 getSelfH = html selfTpl
 
-nineM :: AcidState KeyValue -> ScottyM ()
-nineM db = do
+nineM :: ConnectionPool -> ScottyM ()
+nineM pool = do
   addroute GET  "/"          getIndexH
   addroute GET  "/about"     getAboutH
   addroute GET  "/self"      getSelfH
-  addroute GET  "/:key"      (getRedirectH db)
-  addroute GET  "/show/:key" (getShowH db)
-  addroute POST "/create"    (postCreateH db)
+  addroute GET  "/:key"      (getRedirectH pool)
+  addroute GET  "/show/:key" (getShowH pool)
+  addroute POST "/create"    (postCreateH pool)
 
   -- static svg files
   addroute GET "/static/svg/:file" $ do
@@ -97,7 +98,5 @@ nineM db = do
     param "file" >>= file . ("static/svg/" ++)
 
 main :: IO ()
-main = bracket
-  (openLocalState (KeyValue Map.empty))
-  closeAcidState
-  (scotty 7000 . nineM)
+main = runStderrLoggingT $ runResourceT $ withSqlitePool "9m.db" 10 $ \pool -> do
+         liftIO $ initialize pool >> scotty 7000 (nineM pool)
