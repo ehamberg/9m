@@ -134,7 +134,7 @@ showTpl key url = renderHtml $ base body (Just "selectText('shortenedUrl');")
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div id="shortenedUrl" class="row text-center large">
-    http://9m.no/#{key}
+    <a href="http://9m.no/#{key}">http://9m.no/#{key}</a>
   <div class="row text-center large">
     ⇩
   <div class="row text-center large truncate">
