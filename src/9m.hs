@@ -27,7 +27,7 @@ getAboutH = html aboutTpl
 postCreateH :: AcidState KeyValue -> ActionM ()
 postCreateH db = do
     u <- prefixHttp `fmap` param "url"
-    if | length u > 200 || any (<' ') u -> badRequest
+    if | length u > 500 || any (<' ') u -> badRequest
        | "http://9m.no" `isPrefixOf` u  -> redirect "/self"
        | "https://9m.no" `isPrefixOf` u -> redirect "/self"
        | otherwise                      -> insertAndRedirect u db
