@@ -1,5 +1,4 @@
 .cabal-sandbox/
 cabal.sandbox.config
 dist/
-state/
 9m.db
