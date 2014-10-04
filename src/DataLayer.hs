@@ -1,44 +1,56 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module DataLayer
-  ( KeyValue (..)
+  ( initialize
   , insert
   , find
+  , ConnectionPool
   )
 where
 
-import Control.Monad.Reader
-import Control.Monad.State
-import Data.Acid
-import Data.SafeCopy
-import Data.Typeable
-import qualified Data.Map as Map
+import qualified Database.Persist.Sql as DB
+import Database.Persist.TH
+import Data.Time
 import qualified Data.Text.Lazy as T
+import Control.Monad.IO.Class (liftIO)
 
-type Key = T.Text
-type Url = T.Text
+type ConnectionPool = DB.ConnectionPool
 
-data KeyValue = KeyValue !(Map.Map Key Url)
-  deriving (Typeable, Show)
-$(deriveSafeCopy 0 'base ''KeyValue)
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+Mapping json
+  shortcut T.Text
+  url T.Text
+  created UTCTime
+  UniqueKey shortcut
+  UniqueUrl url
+  deriving Show
+|]
 
-insertKey :: Key -> Url -> Update KeyValue ()
-insertKey key value = do
-    KeyValue m <- get
-    put (KeyValue (Map.insert key value m))
+initialize :: DB.ConnectionPool -> IO ()
+initialize pool = flip DB.runSqlPersistMPool pool $ DB.runMigration migrateAll
 
-lookupKey :: Key -> Query KeyValue (Maybe Url)
-lookupKey key = do
-    KeyValue m <- ask
-    return (Map.lookup key m)
+find :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
+find pool keyOrUrl = flip DB.runSqlPersistMPool pool $ do
+  url <- DB.getBy $ UniqueKey keyOrUrl
+  case url of
+       Just (DB.Entity _ v) -> return $ Just $ mappingUrl v
+       Nothing -> do
+         key <- DB.getBy $ UniqueUrl keyOrUrl
+         case key of
+              Just (DB.Entity _ v) -> return $ Just $ mappingShortcut v
+              Nothing -> return Nothing
 
-$(makeAcidic ''KeyValue ['insertKey, 'lookupKey])
-
-insert :: AcidState KeyValue -> Key -> Url -> IO ()
-insert acid key value = update acid (InsertKey key value)
-
-find :: AcidState KeyValue -> Key -> IO (Maybe T.Text)
-find acid key = query acid (LookupKey key)
+insert :: DB.ConnectionPool -> T.Text -> T.Text -> IO ()
+insert pool key url = flip DB.runSqlPersistMPool pool $ do
+  t <- liftIO getCurrentTime
+  _ <- DB.insert $ Mapping key url t
+  return ()
