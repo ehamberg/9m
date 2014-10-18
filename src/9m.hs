@@ -7,15 +7,13 @@ module Main where
 import Prelude hiding (filter, length, any)
 import Control.Monad (liftM, replicateM)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Logger
 import Data.Char
 import Network.HTTP.Types
 import System.Random (randomRIO)
 import Web.Scotty hiding (get, put)
 import Data.Text.Lazy hiding (find)
 import Database.Persist.Sqlite (withSqlitePool)
-
-import Control.Monad.Logger
-import Control.Monad.Trans.Resource
 
 import DataLayer
 import Templates
