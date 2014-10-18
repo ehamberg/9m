@@ -98,5 +98,5 @@ nineM pool = do
     param "file" >>= file . ("static/svg/" ++)
 
 main :: IO ()
-main = runStderrLoggingT $ runResourceT $ withSqlitePool "9m.db" 10 $ \pool -> do
+main = runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool -> do
          liftIO $ initialize pool >> scotty 7000 (nineM pool)
