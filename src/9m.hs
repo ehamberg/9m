@@ -65,6 +65,7 @@ getRedirectH :: ConnectionPool -> ActionM ()
 getRedirectH pool = do
     key <- param "key"
     mbVal <- liftIO $ findByKey pool key
+    liftIO $ recordHit pool key
     case mbVal of
       Nothing    -> status status404
       Just value -> performRedirect value
