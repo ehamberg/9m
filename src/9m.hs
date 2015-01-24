@@ -43,7 +43,7 @@ postCreateH pool = do
 insertAndRedirect :: Text -> ConnectionPool -> ActionM ()
 insertAndRedirect url pool = do
     key <- liftIO $ do
-      existing <- find pool url
+      existing <- findByUrl pool url
       case existing of
         Just v  -> return v
         Nothing -> do
@@ -64,7 +64,7 @@ randomKey n = liftM pack $ replicateM n randomPrintChar
 getRedirectH :: ConnectionPool -> ActionM ()
 getRedirectH pool = do
     key <- param "key"
-    mbVal <- liftIO $ find pool key
+    mbVal <- liftIO $ findByKey pool key
     case mbVal of
       Nothing    -> status status404
       Just value -> performRedirect value
@@ -77,7 +77,7 @@ getRedirectH pool = do
 getShowH :: ConnectionPool -> ActionM ()
 getShowH pool = do
     key <- param "key" `rescue` const next
-    mbVal <- liftIO $ find pool key
+    mbVal <- liftIO $ findByKey pool key
     case mbVal of
       Nothing    -> status status404
       Just value -> html $ showTpl key value

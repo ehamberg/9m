@@ -12,7 +12,8 @@
 module DataLayer
   ( initialize
   , insert
-  , find
+  , findByKey
+  , findByUrl
   , ConnectionPool
   )
 where
@@ -38,16 +39,19 @@ Mapping json
 initialize :: DB.ConnectionPool -> IO ()
 initialize pool = flip DB.runSqlPersistMPool pool $ DB.runMigration migrateAll
 
-find :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
-find pool keyOrUrl = flip DB.runSqlPersistMPool pool $ do
-  url <- DB.getBy $ UniqueKey keyOrUrl
-  case url of
-       Just (DB.Entity _ v) -> return $ Just $ mappingUrl v
-       Nothing -> do
-         key <- DB.getBy $ UniqueUrl keyOrUrl
-         case key of
-              Just (DB.Entity _ v) -> return $ Just $ mappingShortcut v
-              Nothing -> return Nothing
+findByKey :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
+findByKey pool key = flip DB.runSqlPersistMPool pool $ do
+  url <- DB.getBy $ UniqueKey key
+  return $ case url of
+                Just (DB.Entity _ v) -> Just $ mappingUrl v
+                Nothing -> Nothing
+
+findByUrl :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
+findByUrl pool url = flip DB.runSqlPersistMPool pool $ do
+  url' <- DB.getBy $ UniqueUrl url
+  return $ case url' of
+                Just (DB.Entity _ v) -> Just $ mappingShortcut v
+                Nothing -> Nothing
 
 insert :: DB.ConnectionPool -> T.Text -> T.Text -> IO ()
 insert pool key url = flip DB.runSqlPersistMPool pool $ do
