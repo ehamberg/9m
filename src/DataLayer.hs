@@ -14,11 +14,13 @@ module DataLayer
   , insert
   , findByKey
   , findByUrl
+  , recordHit
   , ConnectionPool
   )
 where
 
 import qualified Database.Persist.Sql as DB
+import Database.Persist.Sql ((+=.), (==.))
 import Database.Persist.TH
 import Data.Time
 import qualified Data.Text.Lazy as T
@@ -30,6 +32,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Mapping json
   shortcut T.Text
   url T.Text
+  hits Int default=0
   created UTCTime
   UniqueKey shortcut
   UniqueUrl url
@@ -53,8 +56,12 @@ findByUrl pool url = flip DB.runSqlPersistMPool pool $ do
                 Just (DB.Entity _ v) -> Just $ mappingShortcut v
                 Nothing -> Nothing
 
+recordHit :: DB.ConnectionPool -> T.Text -> IO ()
+recordHit pool key = flip DB.runSqlPersistMPool pool $ do
+  DB.updateWhere [MappingShortcut ==. key] [MappingHits +=. 1]
+
 insert :: DB.ConnectionPool -> T.Text -> T.Text -> IO ()
 insert pool key url = flip DB.runSqlPersistMPool pool $ do
   t <- liftIO getCurrentTime
-  _ <- DB.insert $ Mapping key url t
+  _ <- DB.insert $ Mapping key url 0 t
   return ()
