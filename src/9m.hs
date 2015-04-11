@@ -12,7 +12,10 @@ import Data.Char
 import Network.HTTP.Types
 import System.Random (randomRIO)
 import Web.Scotty hiding (get, put)
+import qualified Data.ByteString.Lazy as LB
+import qualified Data.ByteString.Char8 as B8
 import Data.Text.Lazy hiding (find)
+import Data.Text.Lazy.Encoding (encodeUtf8)
 import Database.Persist.Sqlite (withSqlitePool)
 
 import DataLayer
@@ -47,7 +50,8 @@ insertAndRedirect url pool = do
           k <- randomKey 2
           insert pool k url
           return k
-    redirect $ "/show/" `append` key
+    redirect $ "/show/" `append` (pack . B8.unpack . urlEncode False .
+                                  LB.toStrict . encodeUtf8 $ key)
 
 randomKey :: Int -> IO Text
 randomKey n = liftM pack $ replicateM n randomPrintChar
