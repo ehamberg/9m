@@ -11,8 +11,6 @@ characters and then cross its fingers and hope you use a great font.
 
 To install:
 
-1. `cabal sandbox init`
-2. `cabal install --only-dependencies`
-3. `cabal build`
-4. `dist/build/9m/9m`
-5. `open 'http://localhost:7000'`
+1. `stack build`
+2. `stack exec 9m`
+3. `open 'http://localhost:7000'`
