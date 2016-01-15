@@ -15,8 +15,8 @@ import Data.Text.Lazy
 import Text.Blaze.Internal (Markup)
 import Data.Maybe (fromJust, isJust)
 
-base :: Markup -> Maybe Text -> Markup
-base body onloadAction = [shamlet|
+base :: Maybe Text -> Markup -> Maybe Text -> Markup
+base subTitle body onloadAction = [shamlet|
 $doctype 5
 <html>
   <head>
@@ -65,7 +65,10 @@ $doctype 5
         margin-bottom: 3px;
       }
     <title>
-      9m URL Shortener
+      $if isJust subTitle
+        9m URL shortener – #{(fromJust subTitle)}
+      $else
+      9m URL shortener
   <body :isJust onloadAction:onload="#{fromJust onloadAction}">
     <div class="container">
       #{header}
@@ -106,7 +109,7 @@ footer = [shamlet|
 |]
 
 indexTpl :: Text
-indexTpl = renderHtml $ base body (Just "document.forms[0].url.focus();")
+indexTpl = renderHtml $ base Nothing body (Just "document.forms[0].url.focus();")
   where body = [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
   <div class="row">
@@ -120,7 +123,7 @@ indexTpl = renderHtml $ base body (Just "document.forms[0].url.focus();")
 
 
 selfTpl :: Text
-selfTpl = renderHtml $ base body Nothing
+selfTpl = renderHtml $ base Nothing body Nothing
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
@@ -130,7 +133,7 @@ selfTpl = renderHtml $ base body Nothing
 |]
 
 showTpl :: Text -> Text -> Text
-showTpl key url = renderHtml $ base body (Just "selectText('shortenedUrl');")
+showTpl key url = renderHtml $ base Nothing body (Just "selectText('shortenedUrl');")
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div id="shortenedUrl" class="row text-center large">
@@ -142,7 +145,7 @@ showTpl key url = renderHtml $ base body (Just "selectText('shortenedUrl');")
 |]
 
 aboutTpl :: Text
-aboutTpl = renderHtml $ base body Nothing
+aboutTpl = renderHtml $ base (Just "About") body Nothing
   where body = [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12">

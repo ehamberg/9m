@@ -9,6 +9,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
+-- To avoid “unused” warnings from `mkpersist`
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+
 module DataLayer
   ( initialize
   , insert

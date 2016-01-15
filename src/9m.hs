@@ -14,7 +14,7 @@ import System.Random (randomRIO)
 import Web.Scotty hiding (get, put)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Char8 as B8
-import Data.Text.Lazy hiding (find)
+import Data.Text.Lazy
 import Data.Text.Lazy.Encoding (encodeUtf8)
 import Database.Persist.Sqlite (withSqlitePool)
 
