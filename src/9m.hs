@@ -97,7 +97,7 @@ nineM pool = do
   -- static svg files
   addroute GET "/static/svg/:file" $ do
     setHeader "content-type" "image/svg+xml"
-    param "file" >>= file . ("static/svg/" ++)
+    param "file" >>= file . ("/static/svg/" ++)
 
 main :: IO ()
 main = runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
