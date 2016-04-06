@@ -31,6 +31,7 @@ postCreateH :: ConnectionPool -> ActionM ()
 postCreateH pool = do
     u <- prefixHttp `fmap` param "url"
     if | length u > 500 || any (<' ') u -> badRequest
+       | "data:" `isInfixOf` u          -> badRequest
        | "http://9m.no" `isPrefixOf` u  -> redirect "/self"
        | "https://9m.no" `isPrefixOf` u -> redirect "/self"
        | otherwise                      -> insertAndRedirect u pool
