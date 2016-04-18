@@ -9,8 +9,9 @@ characters and then cross its fingers and hope you use a great font.
 
 (This is a horrible idea in many ways and was a quick hack for fun.)
 
-To install:
+To install/run:
 
+0. [Install *stack*](http://docs.haskellstack.org/en/stable/README/#how-to-install)
 1. `stack build`
 2. `stack exec 9m`
 3. `open 'http://localhost:7000'`
