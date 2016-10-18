@@ -127,7 +127,7 @@ selfTpl = renderHtml $ base Nothing body Nothing
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
-    http://9m.no/
+    https://9m.no/
   <div class="row text-center large">
     ↻
 |]
@@ -137,7 +137,7 @@ showTpl key url = renderHtml $ base Nothing body (Just "selectText('shortenedUrl
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div id="shortenedUrl" class="row text-center large">
-    <a href="http://9m.no/#{key}">http://9m.no/#{key}</a>
+    <a href="https://9m.no/#{key}">https://9m.no/#{key}</a>
   <div class="row text-center large">
     ⇩
   <div class="row text-center large truncate">
