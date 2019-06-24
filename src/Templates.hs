@@ -39,6 +39,11 @@ $doctype 5
               window.getSelection().addRange( range );
           }
       }
+      function copyShortUrlToClipboardAndNotifyUser() {
+          selectText( 'shortenedUrl' );
+          document.execCommand( 'copy' );
+          document.getElementById( 'message' ).innerText = "Copied to clipboard!";
+      }
     <style>
       h1 {
         font-weight: bolder;
@@ -63,6 +68,9 @@ $doctype 5
       }
       hr {
         margin-bottom: 3px;
+      }
+      a.clipboard:link, a.clipboard:hover {
+        text-decoration: none;
       }
     <title>
       $if isJust subTitle
@@ -136,8 +144,10 @@ showTpl :: Text -> Text -> Text
 showTpl key url = renderHtml $ base Nothing body (Just "selectText('shortenedUrl');")
   where body = [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
-  <div id="shortenedUrl" class="row text-center large">
-    <a href="https://9m.no/#{key}">https://9m.no/#{key}</a>
+  <div class="row text-center large">
+    <a href="https://9m.no/#{key}" id="shortenedUrl">https://9m.no/#{key}</a>
+    <a href="javascript:void(0);" class="clipboard" onclick="copyShortUrlToClipboardAndNotifyUser();">📋</a>
+  <div class="row text-center large" id="message">
   <div class="row text-center large">
     ⇩
   <div class="row text-center large truncate">
