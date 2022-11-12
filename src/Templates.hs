@@ -2,21 +2,22 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Templates
-  ( indexTpl
-  , showTpl
-  , selfTpl
-  , aboutTpl
+  ( indexTpl,
+    showTpl,
+    selfTpl,
+    aboutTpl,
   )
 where
 
-import Text.Blaze.Html.Renderer.Text (renderHtml)
-import Text.Hamlet
-import Data.Text.Lazy
-import Text.Blaze.Internal (Markup)
 import Data.Maybe (fromJust, isJust)
+import Data.Text.Lazy
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Text.Blaze.Internal (Markup)
+import Text.Hamlet
 
 base :: Maybe Text -> Markup -> Maybe Text -> Markup
-base subTitle body onloadAction = [shamlet|
+base subTitle body onloadAction =
+  [shamlet|
 $doctype 5
 <html>
   <head>
@@ -95,7 +96,8 @@ $doctype 5
 |]
 
 header :: Markup
-header = [shamlet|
+header =
+  [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12 header">
   <h1 class="text-center">
     <a href="/">
@@ -103,7 +105,8 @@ header = [shamlet|
 |]
 
 footer :: Markup
-footer = [shamlet|
+footer =
+  [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12">
     <hr>
@@ -118,7 +121,9 @@ footer = [shamlet|
 
 indexTpl :: Text
 indexTpl = renderHtml $ base Nothing body (Just "document.forms[0].url.focus();")
-  where body = [shamlet|
+  where
+    body =
+      [shamlet|
 <div class="col-md-offset-3 col-md-6 col-xs-12">
   <div class="row">
     <div class="col-md-12">
@@ -129,10 +134,11 @@ indexTpl = renderHtml $ base Nothing body (Just "document.forms[0].url.focus();"
             <button class="btn btn-primary" type="submit">Shorten</button>
 |]
 
-
 selfTpl :: Text
 selfTpl = renderHtml $ base Nothing body Nothing
-  where body = [shamlet|
+  where
+    body =
+      [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
     https://9m.no/
@@ -142,7 +148,9 @@ selfTpl = renderHtml $ base Nothing body Nothing
 
 showTpl :: Text -> Text -> Text
 showTpl key url = renderHtml $ base Nothing body (Just "selectText('shortenedUrl');")
-  where body = [shamlet|
+  where
+    body =
+      [shamlet|
 <div class="col-md-offset-2 col-md-8 col-xs-12 result">
   <div class="row text-center large">
     <a href="https://9m.no/#{key}" id="shortenedUrl">https://9m.no/#{key}</a>
@@ -156,7 +164,9 @@ showTpl key url = renderHtml $ base Nothing body (Just "selectText('shortenedUrl
 
 aboutTpl :: Text
 aboutTpl = renderHtml $ base (Just "About") body Nothing
-  where body = [shamlet|
+  where
+    body =
+      [shamlet|
 <div class="row">
   <div class="col-md-offset-3 col-md-6 col-xs-12">
     <h2 class="text-center">

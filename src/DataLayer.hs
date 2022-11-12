@@ -1,36 +1,37 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE DataKinds #-}
-
 -- To avoid “unused” warnings from `mkpersist`
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module DataLayer
-  ( initialize
-  , insert
-  , findByKey
-  , findByUrl
-  , recordHit
-  , ConnectionPool
+  ( initialize,
+    insert,
+    findByKey,
+    findByUrl,
+    recordHit,
+    ConnectionPool,
   )
 where
 
-import qualified Database.Persist.Sql as DB
-import Database.Persist.Sql ((+=.), (==.))
-import Database.Persist.TH
-import Data.Time
-import qualified Data.Text.Lazy as T
 import Control.Monad.IO.Class (liftIO)
+import Data.Text.Lazy qualified as T
+import Data.Time
+import Database.Persist.Sql ((+=.), (==.))
+import Database.Persist.Sql qualified as DB
+import Database.Persist.TH
 
 type ConnectionPool = DB.ConnectionPool
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+share
+  [mkPersist sqlSettings, mkMigrate "migrateAll"]
+  [persistLowerCase|
 Mapping json
   shortcut T.Text
   url T.Text
@@ -48,15 +49,15 @@ findByKey :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
 findByKey pool key = flip DB.runSqlPool pool $ do
   url <- DB.getBy $ UniqueKey key
   return $ case url of
-                Just (DB.Entity _ v) -> Just $ mappingUrl v
-                Nothing -> Nothing
+    Just (DB.Entity _ v) -> Just $ mappingUrl v
+    Nothing -> Nothing
 
 findByUrl :: DB.ConnectionPool -> T.Text -> IO (Maybe T.Text)
 findByUrl pool url = flip DB.runSqlPool pool $ do
   url' <- DB.getBy $ UniqueUrl url
   return $ case url' of
-                Just (DB.Entity _ v) -> Just $ mappingShortcut v
-                Nothing -> Nothing
+    Just (DB.Entity _ v) -> Just $ mappingShortcut v
+    Nothing -> Nothing
 
 recordHit :: DB.ConnectionPool -> T.Text -> IO ()
 recordHit pool key = flip DB.runSqlPersistMPool pool $ do
