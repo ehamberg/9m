@@ -6,7 +6,7 @@ License-file:  LICENSE
 author:        Erlend Hamberg
 maintainer:    erlend@hamberg.no
 category:      Network
-tested-with:   GHC==7.8.2
+tested-with:   GHC==9.2.4
 build-type:    Simple
 cabal-version: >=1.10
 
