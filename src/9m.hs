@@ -55,7 +55,7 @@ insertAndRedirect url pool = do
                                   LB.toStrict . encodeUtf8 $ key)
 
 randomKey :: Int -> IO Text
-randomKey n = liftM pack $ replicateM n randomPrintChar
+randomKey n = pack <$> replicateM n randomPrintChar
   where randomPrintChar = do
             c <- randomRIO ('A', '\128709')
             if isPrint c
