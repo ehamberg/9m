@@ -2,12 +2,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE EmptyDataDecls #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds #-}
 
 -- To avoid “unused” warnings from `mkpersist`
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
