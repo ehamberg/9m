@@ -34,6 +34,7 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             cabal-install
+            zlib
           ];
           inputsFrom = builtins.attrValues self.packages.${system};
         };
