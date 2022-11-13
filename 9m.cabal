@@ -2,37 +2,40 @@ name:          9m
 version:       0.1.1
 synopsis:      Unicode URI shortener
 license:       BSD3
-License-file:  LICENSE
+license-file:  LICENSE
 author:        Erlend Hamberg
 maintainer:    erlend@hamberg.no
 category:      Network
-tested-with:   GHC==9.2.4
+tested-with:   GHC ==9.2.4
 build-type:    Simple
 cabal-version: >=1.10
 
 executable 9m
-  main-is: 9m.hs
-  other-modules:   DataLayer
-                 , Templates
-  hs-source-dirs: src
+  main-is:          9m.hs
+  other-modules:
+    DataLayer
+    Templates
+
+  hs-source-dirs:   src
   default-language: GHC2021
-  ghc-options: -O2 -Wall
-  build-depends:   base
-                 , aeson
-                 , blaze-html
-                 , blaze-markup
-                 , bytestring
-                 , containers
-                 , http-types
-                 , monad-logger
-                 , mtl
-                 , persistent
-                 , persistent-sqlite
-                 , persistent-template
-                 , random
-                 , resourcet
-                 , scotty
-                 , shakespeare
-                 , text
-                 , time
-                 , transformers
+  ghc-options:      -O2 -Wall
+  build-depends:
+      aeson
+    , base
+    , blaze-html
+    , blaze-markup
+    , bytestring
+    , containers
+    , http-types
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , random
+    , resourcet
+    , scotty
+    , shakespeare
+    , text
+    , time
+    , transformers
