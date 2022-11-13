@@ -4,7 +4,7 @@
 
 module Main where
 
-import Control.Monad (liftM, replicateM)
+import Control.Monad (replicateM)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger
 import Data.ByteString.Char8 qualified as B8
