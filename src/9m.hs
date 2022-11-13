@@ -7,9 +7,8 @@ module Main where
 import Control.Monad (replicateM)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger
-import Data.ByteString.Char8 qualified as B8
-import Data.ByteString.Lazy qualified as LB
 import Data.Char
+import Data.String.Conversions (cs)
 import Data.Text.Lazy
 import Data.Text.Lazy.Encoding (encodeUtf8)
 import DataLayer
@@ -52,15 +51,7 @@ insertAndRedirect url pool = do
         k <- randomKey 2
         insert pool k url
         return k
-  redirect $
-    "/show/"
-      `append` ( pack
-                   . B8.unpack
-                   . urlEncode False
-                   . LB.toStrict
-                   . encodeUtf8
-                   $ key
-               )
+  redirect $ "/show/" `append` (cs . urlEncode False . cs . encodeUtf8 $ key)
 
 randomKey :: Int -> IO Text
 randomKey n = pack <$> replicateM n randomPrintChar

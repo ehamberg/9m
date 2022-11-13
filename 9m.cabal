@@ -36,6 +36,7 @@ executable 9m
     , resourcet
     , scotty
     , shakespeare
+    , string-conversions
     , text
     , time
     , transformers
