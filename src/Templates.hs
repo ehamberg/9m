@@ -10,7 +10,7 @@ module Templates
 where
 
 import Data.Maybe (fromJust, isJust)
-import Data.Text.Lazy
+import Data.Text.Lazy (Text)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Blaze.Internal (Markup)
 import Text.Hamlet

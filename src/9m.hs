@@ -6,18 +6,19 @@ module Main where
 
 import Control.Monad (replicateM)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Logger
-import Data.Char
+import Control.Monad.Logger (runStderrLoggingT)
+import Data.Char qualified
 import Data.String.Conversions (cs)
-import Data.Text.Lazy
+import Data.Text.Lazy (Text)
+import Data.Text.Lazy qualified as T (any, isInfixOf, isPrefixOf, length, pack)
 import Data.Text.Lazy.Encoding (encodeUtf8)
-import DataLayer
+import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, recordHit)
 import Database.Persist.Sqlite (withSqlitePool)
-import Network.HTTP.Types
+import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
 import System.Random (randomRIO)
-import Templates
-import Web.Scotty hiding (get, put)
-import Prelude hiding (any, filter, length)
+import Templates (aboutTpl, indexTpl, selfTpl, showTpl)
+import Web.Scotty
+import Prelude
 
 getIndexH :: ActionM ()
 getIndexH = html indexTpl
@@ -29,17 +30,17 @@ postCreateH :: ConnectionPool -> ActionM ()
 postCreateH pool = do
   u <- prefixHttp `fmap` param "url"
   if
-      | length u > 500 || any (< ' ') u -> badRequest
-      | "data:" `isInfixOf` u -> badRequest
-      | "http://9m.no" `isPrefixOf` u -> redirect "/self"
-      | "https://9m.no" `isPrefixOf` u -> redirect "/self"
+      | T.length u > 500 || T.any (< ' ') u -> badRequest
+      | "data:" `T.isInfixOf` u -> badRequest
+      | "http://9m.no" `T.isPrefixOf` u -> redirect "/self"
+      | "https://9m.no" `T.isPrefixOf` u -> redirect "/self"
       | otherwise -> insertAndRedirect u pool
   where
     badRequest = status status400 >> text "Bad request"
     prefixHttp url
-      | "http://" `isPrefixOf` url = url
-      | "https://" `isPrefixOf` url = url
-      | otherwise = "http://" `append` url
+      | "http://" `T.isPrefixOf` url = url
+      | "https://" `T.isPrefixOf` url = url
+      | otherwise = "http://" <> url
 
 insertAndRedirect :: Text -> ConnectionPool -> ActionM ()
 insertAndRedirect url pool = do
@@ -51,14 +52,14 @@ insertAndRedirect url pool = do
         k <- randomKey 2
         insert pool k url
         return k
-  redirect $ "/show/" `append` (cs . urlEncode False . cs . encodeUtf8 $ key)
+  redirect $ "/show/" <> (cs . urlEncode False . cs . encodeUtf8 $ key)
 
 randomKey :: Int -> IO Text
-randomKey n = pack <$> replicateM n randomPrintChar
+randomKey n = T.pack <$> replicateM n randomPrintChar
   where
     randomPrintChar = do
       c <- randomRIO ('A', '\128709')
-      if isPrint c
+      if Data.Char.isPrint c
         then return c
         else randomPrintChar
 

@@ -22,10 +22,10 @@ where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Text.Lazy qualified as T
-import Data.Time
+import Data.Time (UTCTime, getCurrentTime)
 import Database.Persist.Sql ((+=.), (==.))
 import Database.Persist.Sql qualified as DB
-import Database.Persist.TH
+import Database.Persist.TH (mkMigrate, mkPersist, persistLowerCase, share, sqlSettings)
 
 type ConnectionPool = DB.ConnectionPool
 
