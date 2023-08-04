@@ -14,29 +14,36 @@ executable 9m
   main-is:          9m.hs
   other-modules:
     DataLayer
+    SafeBrowsing
     Templates
 
   hs-source-dirs:   src
   default-language: GHC2021
   ghc-options:      -Wall
   build-depends:
-      aeson
-    , base
-    , blaze-html
-    , blaze-markup
-    , bytestring
-    , containers
-    , http-types
-    , monad-logger
-    , mtl
-    , persistent
-    , persistent-sqlite
-    , persistent-template
-    , random
-    , resourcet
-    , scotty
-    , shakespeare
-    , string-conversions
-    , text
-    , time
-    , transformers
+                  aeson
+                , base
+                , blaze-html
+                , blaze-markup
+                , bytestring
+                , containers
+                , errors
+                , http-types
+                , ini
+                , lens
+                , monad-logger
+                , mtl
+                , optparse-applicative
+                , persistent
+                , persistent-sqlite
+                , persistent-template
+                , random
+                , resourcet
+                , scotty
+                , shakespeare
+                , string-conversions
+                , string-conversions
+                , text
+                , time
+                , transformers
+                , wreq

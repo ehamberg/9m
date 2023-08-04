@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        haskellPackages = pkgs.haskell.packages.ghc924;
+        haskellPackages = pkgs.haskell.packages.ghc92;
 
         jailbreakUnbreak = pkg:
           pkgs.haskell.lib.doJailbreak (pkg.overrideAttrs (_: { meta = { }; }));
@@ -33,6 +33,10 @@
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            haskellPackages.haskell-language-server
+            haskellPackages.hlint
+            haskellPackages.cabal-fmt
+            haskellPackages.ormolu
             cabal-install
             zlib
           ];

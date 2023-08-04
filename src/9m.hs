@@ -1,24 +1,40 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Main where
 
-import Control.Monad (replicateM)
-import Control.Monad.IO.Class (liftIO)
+import Control.Exception (throwIO)
+import Control.Monad.Except
 import Control.Monad.Logger (runStderrLoggingT)
 import Data.Char qualified
+import Data.Ini (lookupValue, parseIni)
 import Data.String.Conversions (cs)
+-- import Data.Text qualified
 import Data.Text.Lazy (Text)
-import Data.Text.Lazy qualified as T (any, isInfixOf, isPrefixOf, length, pack)
-import Data.Text.Lazy.Encoding (encodeUtf8)
+import Data.Text.Lazy qualified as TL
 import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, recordHit)
 import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
+import Options.Applicative (Alternative (some, (<|>)), execParser, fullDesc, help, helper, info, long, progDesc, short, strOption, (<**>))
+import Options.Applicative qualified as Options
+import SafeBrowsing (checkUrl)
 import System.Random (randomRIO)
 import Templates (aboutTpl, indexTpl, selfTpl, showTpl)
 import Web.Scotty
 import Prelude
+
+data ConfigSrc
+  = FileSrc FilePath
+  | DirectSrc Config
+  deriving (Show)
+
+data Config = Config
+  { apiKey :: Text,
+    bannedDomains :: [Text]
+  }
+  deriving (Show)
 
 getIndexH :: ActionM ()
 getIndexH = html indexTpl
@@ -26,36 +42,57 @@ getIndexH = html indexTpl
 getAboutH :: ActionM ()
 getAboutH = html aboutTpl
 
-postCreateH :: ConnectionPool -> ActionM ()
-postCreateH pool = do
+postCreateH :: ConnectionPool -> Config -> ActionM ()
+postCreateH pool config = do
   u <- prefixHttp `fmap` param "url"
   if
-      | T.length u > 500 || T.any (< ' ') u -> badRequest
-      | "data:" `T.isInfixOf` u -> badRequest
-      | "http://9m.no" `T.isPrefixOf` u -> redirect "/self"
-      | "https://9m.no" `T.isPrefixOf` u -> redirect "/self"
-      | otherwise -> insertAndRedirect u pool
+      | TL.length u > 500 || TL.any (< ' ') u -> badRequest
+      | "data:" `TL.isInfixOf` u -> badRequest
+      | "http://9m.no" `TL.isPrefixOf` u -> redirect "/self"
+      | "https://9m.no" `TL.isPrefixOf` u -> redirect "/self"
+      | otherwise -> insertAndRedirect u pool config
   where
     badRequest = status status400 >> text "Bad request"
     prefixHttp url
-      | "http://" `T.isPrefixOf` url = url
-      | "https://" `T.isPrefixOf` url = url
+      | "http://" `TL.isPrefixOf` url = url
+      | "https://" `TL.isPrefixOf` url = url
       | otherwise = "http://" <> url
 
-insertAndRedirect :: Text -> ConnectionPool -> ActionM ()
-insertAndRedirect url pool = do
-  key <- liftIO $ do
-    existing <- findByUrl pool url
-    case existing of
-      Just v -> return v
-      Nothing -> do
-        k <- randomKey 2
-        insert pool k url
-        return k
-  redirect $ "/show/" <> (cs . urlEncode False . cs . encodeUtf8 $ key)
+insertAndRedirect :: Text -> ConnectionPool -> Config -> ActionM ()
+insertAndRedirect url pool config = do
+  liftIO (check config url) >>= \case
+    Left err -> do
+      liftIO $ putStrLn $ "Error: " <> show err
+      status status400
+      text "Bad request"
+    Right () -> do
+      key <- liftIO $ do
+        existing <- findByUrl pool url
+        case existing of
+          Just v -> return v
+          Nothing -> do
+            k <- randomKey 2
+            insert pool k url
+            return k
+      redirect $ "/show/" <> (cs . urlEncode False . cs $ key)
+
+check :: Config -> Text -> IO (Either String ())
+check config url = runExceptT $ do
+  if isBannedDomain url (bannedDomains config)
+    then throwError "Banned domain"
+    else do
+      res <- liftIO $ checkUrl (apiKey config) url
+      case res of
+        Left err -> throwError err
+        Right () -> return ()
+
+isBannedDomain :: Text -> [Text] -> Bool
+isBannedDomain url bannedDomains = do
+  let url' = TL.drop 2 . TL.dropWhile (/= '/') $ url
+  any (`TL.isPrefixOf` url') bannedDomains
 
 randomKey :: Int -> IO Text
-randomKey n = T.pack <$> replicateM n randomPrintChar
+randomKey n = cs <$> replicateM n randomPrintChar
   where
     randomPrintChar = do
       c <- randomRIO ('A', '\128709')
@@ -89,20 +126,63 @@ getShowH pool = do
 getSelfH :: ActionM ()
 getSelfH = html selfTpl
 
-nineM :: ConnectionPool -> ScottyM ()
-nineM pool = do
+nineM :: ConnectionPool -> Config -> ScottyM ()
+nineM pool config = do
   addroute GET "/" getIndexH
   addroute GET "/about" getAboutH
   addroute GET "/self" getSelfH
   addroute GET "/:key" (getRedirectH pool)
   addroute GET "/show/:key" (getShowH pool)
-  addroute POST "/create" (postCreateH pool)
+  addroute POST "/create" (postCreateH pool config)
 
   -- static svg files
   addroute GET "/static/svg/:file" $ do
     setHeader "content-type" "image/svg+xml"
     param "file" >>= file . ("/static/svg/" ++)
 
+directConfig :: Options.Parser Config
+directConfig =
+  Config
+    <$> strOption
+      ( long "api-key"
+          <> help "SafeBrowsing API Key"
+      )
+    <*> some
+      ( strOption
+          ( long "banned"
+              <> short 'b'
+              <> help "A banned domain"
+          )
+      )
+
+configSrc :: Options.Parser ConfigSrc
+configSrc =
+  (DirectSrc <$> directConfig)
+    <|> ( FileSrc
+            <$> strOption
+              ( long "config-file"
+                  <> help "Configuration file"
+              )
+        )
+
+readConfig :: FilePath -> IO Config
+readConfig path = do
+  contents <- liftIO (readFile path)
+  case parseIni (cs contents) of
+    Left err -> throwIO (userError err)
+    Right ini ->
+      Config
+        <$> either (error "") (pure . cs) (lookupValue "SAFEBROWSING" "api_key" ini)
+        <*> either (const (pure [])) (pure . (map cs . words . cs)) (lookupValue "NINEM" "banned_domains" ini)
+
+loadConfig :: ConfigSrc -> IO Config
+loadConfig (DirectSrc cfg) = pure cfg
+loadConfig (FileSrc filePath) = readConfig filePath
+
 main :: IO ()
-main = runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
-  liftIO $ initialize pool >> scotty 7000 (nineM pool)
+main = do
+  let opts = info (configSrc <**> helper) (fullDesc <> progDesc "9m Unicode URL shortener")
+  config <- execParser opts >>= loadConfig
+  print config
+  runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
+    liftIO $ initialize pool >> scotty 7000 (nineM pool config)
