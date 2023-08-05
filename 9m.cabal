@@ -18,7 +18,7 @@ executable 9m
 
   hs-source-dirs:   src
   default-language: GHC2021
-  ghc-options:      -O2 -Wall
+  ghc-options:      -Wall
   build-depends:
       aeson
     , base
