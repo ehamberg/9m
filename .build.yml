@@ -1,7 +1,6 @@
-image: debian/unstable
-  
-packages:
-  - haskell-stack
+image: debian/stable
 tasks:
+  - install-stack: |
+      curl -sSL https://get.haskellstack.org/ | sudo sh
   - build: |
-      PATH=$HOME/.local/bin:$PATH stack build
+      stack build
