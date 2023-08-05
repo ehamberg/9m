@@ -1,0 +1,7 @@
+image: debian/stable
+  
+packages:
+  - haskell-stack
+tasks:
+  - build: |
+      PATH=$HOME/.local/bin:$PATH stack build
