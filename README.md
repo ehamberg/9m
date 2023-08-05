@@ -1,6 +1,8 @@
 9m – Unicode-aware URL Shortener
 ================================
 
+[![builds.sr.ht status](https://builds.sr.ht/~ehamberg/9m.svg)](https://builds.sr.ht/~ehamberg/9m?)
+
 9m Unicode URL Shortener. Generates a shortcut from <http://9m.no> using two
 unicode characters, e.g. <http://9m.no/പ湛>.
 

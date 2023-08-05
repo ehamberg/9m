@@ -1,0 +1,7 @@
+image: debian/stable
+tasks:
+  - install-stack: |
+      curl -sSL https://get.haskellstack.org/ | sudo sh
+  - build: |
+      cd 9m
+      stack build
