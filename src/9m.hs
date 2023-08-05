@@ -56,7 +56,7 @@ postCreateH pool config = do
     prefixHttp url
       | "http://" `TL.isPrefixOf` url = url
       | "https://" `TL.isPrefixOf` url = url
-      | otherwise = "http://" <> url
+      | otherwise = "https://" <> url
 
 insertAndRedirect :: Text -> ConnectionPool -> Config -> ActionM ()
 insertAndRedirect url pool config = do
