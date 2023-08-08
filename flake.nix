@@ -1,46 +1,46 @@
 {
-  description = "9m";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        haskellPackages = pkgs.haskell.packages.ghc92;
+        config = { };
 
-        jailbreakUnbreak = pkg:
-          pkgs.haskell.lib.doJailbreak (pkg.overrideAttrs (_: { meta = { }; }));
+        overlay = pkgsNew: pkgsOld: {
+          ninem = pkgsNew.haskell.lib.justStaticExecutables
+            pkgsNew.haskellPackages.ninem;
 
-        packageName = "9m";
-      in {
-        packages.${packageName} =
-          haskellPackages.callCabal2nix packageName self rec {
-            # Dependency overrides go here
-          };
-
-        packages.default = self.packages.${system}.${packageName};
-
-        apps.${packageName} = {
-          type = "app";
-          program = "${self.packages.${system}.default}/bin/9m";
+          haskellPackages = pkgsOld.haskellPackages.override (old: {
+            overrides =
+              pkgsNew.haskell.lib.packageSourceOverrides { ninem = ./.; };
+          });
         };
 
-        apps.default = self.apps.${system}.${packageName};
+        pkgs = import nixpkgs {
+          inherit config system;
+          overlays = [ overlay ];
+        };
 
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            haskellPackages.haskell-language-server
-            haskellPackages.hlint
-            haskellPackages.cabal-fmt
-            haskellPackages.ormolu
-            cabal-install
-            zlib
-          ];
-          inputsFrom = builtins.attrValues self.packages.${system};
+      in rec {
+        packages.default = pkgs.haskellPackages.ninem;
+
+        apps.default = {
+          type = "app";
+          program = "${pkgs.ninem}/bin/9m";
+        };
+
+        devShells = {
+            default = pkgs.mkShell { buildInputs = with pkgs; [
+                haskellPackages.haskell-language-server
+                haskellPackages.hlint
+                haskellPackages.cabal-fmt
+                haskellPackages.ormolu
+                cabal-install
+                zlib
+            ]; };
         };
       });
 }
