@@ -18,7 +18,6 @@ import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, reco
 import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
 import Options.Applicative (Alternative (some, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
-import Options.Applicative qualified as Options
 import SafeBrowsing (checkUrl)
 import System.Random (randomRIO)
 import Templates (aboutTpl, indexTpl, selfTpl, showTpl)
@@ -142,39 +141,6 @@ nineM pool config = do
     setHeader "content-type" "image/svg+xml"
     param "file" >>= file . ("/static/svg/" ++)
 
-directConfig :: Options.Parser Config
-directConfig =
-  Config
-    <$> optional
-      ( strOption
-          ( long "api-key"
-              <> help "SafeBrowsing API Key"
-          )
-      )
-    <*> some
-      ( strOption
-          ( long "banned"
-              <> short 'b'
-              <> help "A banned domain"
-          )
-      )
-
-configSrc :: Options.Parser ConfigSrc
-configSrc = DirectSrc <$> directConfig <|> (FileSrc <$> strOption (long "config-file"))
-
-loadConfig :: ConfigSrc -> IO Config
-loadConfig (DirectSrc cfg) = pure cfg
-loadConfig (FileSrc filePath) = do
-  contents <- liftIO (readFile filePath)
-  case parseIni (cs contents) of
-    Left err -> throwIO (userError err)
-    Right ini ->
-      let lookupValue' key section = fmap cs . hush $ lookupValue key section ini
-          getDomains = either (const (pure [])) $ pure . fmap cs . words . cs
-       in Config
-            <$> pure (lookupValue' "SAFEBROWSING" "api_key")
-            <*> getDomains (lookupValue "NINEM" "banned_domains" ini)
-
 main :: IO ()
 main = do
   let opts = info (configSrc <**> helper) (fullDesc <> progDesc "9m Unicode URL shortener")
@@ -182,3 +148,22 @@ main = do
   print config
   runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
     liftIO $ initialize pool >> scotty 7000 (nineM pool config)
+  where
+    directConfig =
+      Config
+        <$> optional (strOption (long "api-key" <> help "SafeBrowsing API Key"))
+        <*> some (strOption (long "banned" <> short 'b' <> help "A banned domain"))
+
+    configSrc = DirectSrc <$> directConfig <|> (FileSrc <$> strOption (long "config-file"))
+
+    loadConfig (DirectSrc cfg) = pure cfg
+    loadConfig (FileSrc filePath) = do
+      contents <- liftIO (readFile filePath)
+      case parseIni (cs contents) of
+        Left err -> throwIO (userError err)
+        Right ini ->
+          let lookupValue' key section = fmap cs . hush $ lookupValue key section ini
+              getDomains = either (const (pure [])) $ pure . fmap cs . words . cs
+           in Config
+                <$> pure (lookupValue' "SAFEBROWSING" "api_key")
+                <*> getDomains (lookupValue "NINEM" "banned_domains" ini)
