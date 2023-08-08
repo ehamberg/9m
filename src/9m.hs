@@ -11,7 +11,6 @@ import Control.Monad.Logger (runStderrLoggingT)
 import Data.Char qualified
 import Data.Ini (lookupValue, parseIni)
 import Data.String.Conversions (cs)
--- import Data.Text qualified
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy qualified as TL
 import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, recordHit)
