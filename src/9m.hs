@@ -8,7 +8,7 @@ module Main where
 import Control.Error (hush)
 import Control.Exception (throwIO)
 import Control.Monad.Except
-import Control.Monad.Logger (runStderrLoggingT)
+import Control.Monad.Logger (runStdoutLoggingT)
 import Data.Char qualified
 import Data.Ini (lookupValue, parseIni)
 import Data.String.Conversions (cs)
@@ -146,7 +146,7 @@ main = do
   let opts = info (configSrc <**> helper) (fullDesc <> progDesc "9m Unicode URL shortener")
   config <- execParser opts >>= loadConfig
   print config
-  runStderrLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
+  runStdoutLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
     liftIO $ initialize pool >> scotty 7000 (nineM pool config)
   where
     directConfig =
