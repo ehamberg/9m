@@ -5,6 +5,7 @@
 
 module Main where
 
+import Control.Error (hush)
 import Control.Exception (throwIO)
 import Control.Monad.Except
 import Control.Monad.Logger (runStderrLoggingT)
@@ -16,7 +17,7 @@ import Data.Text.Lazy qualified as TL
 import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, recordHit)
 import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
-import Options.Applicative (Alternative (some, (<|>)), execParser, fullDesc, help, helper, info, long, progDesc, short, strOption, (<**>))
+import Options.Applicative (Alternative (some, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
 import Options.Applicative qualified as Options
 import SafeBrowsing (checkUrl)
 import System.Random (randomRIO)
@@ -30,7 +31,7 @@ data ConfigSrc
   deriving (Show)
 
 data Config = Config
-  { apiKey :: Text,
+  { safeBrowsingApiKey :: Maybe Text,
     bannedDomains :: [Text]
   }
   deriving (Show)
@@ -79,11 +80,13 @@ check :: Config -> Text -> IO (Either String ())
 check config url = runExceptT $ do
   if isBannedDomain url (bannedDomains config)
     then throwError "Banned domain"
-    else do
-      res <- liftIO $ checkUrl (apiKey config) url
-      case res of
-        Left err -> throwError err
-        Right () -> return ()
+    else case safeBrowsingApiKey config of
+      Just apiKey -> do
+        res <- liftIO $ checkUrl apiKey url
+        case res of
+          Left err -> throwError err
+          Right () -> pure ()
+      Nothing -> pure ()
 
 isBannedDomain :: Text -> [Text] -> Bool
 isBannedDomain url bannedDomains = do
@@ -142,9 +145,11 @@ nineM pool config = do
 directConfig :: Options.Parser Config
 directConfig =
   Config
-    <$> strOption
-      ( long "api-key"
-          <> help "SafeBrowsing API Key"
+    <$> optional
+      ( strOption
+          ( long "api-key"
+              <> help "SafeBrowsing API Key"
+          )
       )
     <*> some
       ( strOption
@@ -155,28 +160,20 @@ directConfig =
       )
 
 configSrc :: Options.Parser ConfigSrc
-configSrc =
-  (DirectSrc <$> directConfig)
-    <|> ( FileSrc
-            <$> strOption
-              ( long "config-file"
-                  <> help "Configuration file"
-              )
-        )
-
-readConfig :: FilePath -> IO Config
-readConfig path = do
-  contents <- liftIO (readFile path)
-  case parseIni (cs contents) of
-    Left err -> throwIO (userError err)
-    Right ini ->
-      Config
-        <$> either (error "") (pure . cs) (lookupValue "SAFEBROWSING" "api_key" ini)
-        <*> either (const (pure [])) (pure . (map cs . words . cs)) (lookupValue "NINEM" "banned_domains" ini)
+configSrc = DirectSrc <$> directConfig <|> (FileSrc <$> strOption (long "config-file"))
 
 loadConfig :: ConfigSrc -> IO Config
 loadConfig (DirectSrc cfg) = pure cfg
-loadConfig (FileSrc filePath) = readConfig filePath
+loadConfig (FileSrc filePath) = do
+  contents <- liftIO (readFile filePath)
+  case parseIni (cs contents) of
+    Left err -> throwIO (userError err)
+    Right ini ->
+      let lookupValue' key section = fmap cs . hush $ lookupValue key section ini
+          getDomains = either (const (pure [])) $ pure . fmap cs . words . cs
+       in Config
+            <$> pure (lookupValue' "SAFEBROWSING" "api_key")
+            <*> getDomains (lookupValue "NINEM" "banned_domains" ini)
 
 main :: IO ()
 main = do
