@@ -33,14 +33,16 @@
         };
 
         devShells = {
-            default = pkgs.mkShell { buildInputs = with pkgs; [
-                haskellPackages.haskell-language-server
-                haskellPackages.hlint
-                haskellPackages.cabal-fmt
-                haskellPackages.ormolu
-                cabal-install
-                zlib
-            ]; };
+          default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              haskellPackages.haskell-language-server
+              haskellPackages.hlint
+              haskellPackages.cabal-fmt
+              haskellPackages.ormolu
+              cabal-install
+              zlib
+            ];
+          };
         };
       });
 }
