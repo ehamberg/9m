@@ -13,7 +13,7 @@ characters and then cross its fingers and hope you use a great font.
 
 To install/run:
 
-0. [Install *stack*](http://docs.haskellstack.org/en/stable/README/#how-to-install)
+0. [Install *stack*](https://docs.haskellstack.org/en/stable/install_and_upgrade/)
 1. `stack build`
 2. `stack exec 9m`
 3. `open 'http://localhost:7000'`
