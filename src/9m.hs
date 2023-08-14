@@ -139,11 +139,6 @@ nineM pool config = do
   addroute GET "/show/:key" (getShowH pool)
   addroute POST "/create" (postCreateH pool config)
 
-  -- static svg files
-  addroute GET "/static/svg/:file" $ do
-    setHeader "content-type" "image/svg+xml"
-    param "file" >>= file . ("/static/svg/" ++)
-
 main :: IO ()
 main = do
   let opts = info (configSrc <**> helper) (fullDesc <> progDesc "9m Unicode URL shortener")
