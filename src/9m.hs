@@ -2,6 +2,8 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 
 module Main where
 
@@ -77,9 +79,9 @@ insertAndRedirect url pool config = do
 
 check :: Config -> Text -> IO (Either String ())
 check config url = runExceptT $ do
-  if isBannedDomain url (bannedDomains config)
+  if isBannedDomain url config.bannedDomains
     then throwError "Banned domain"
-    else case safeBrowsingApiKey config of
+    else case config.safeBrowsingApiKey of
       Just apiKey -> do
         res <- liftIO $ checkUrl apiKey url
         case res of
