@@ -19,7 +19,7 @@ import Data.Text.Lazy qualified as TL
 import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, recordHit)
 import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
-import Options.Applicative (Alternative (some, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
+import Options.Applicative (Alternative (many, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
 import SafeBrowsing (checkUrl)
 import System.Random (randomRIO)
 import Templates (aboutTpl, indexTpl, selfTpl, showTpl)
@@ -154,7 +154,7 @@ main = do
     directConfig =
       Config
         <$> optional (strOption (long "api-key" <> help "SafeBrowsing API Key"))
-        <*> some (strOption (long "banned" <> short 'b' <> help "A banned domain"))
+        <*> many (strOption (long "banned" <> short 'b' <> help "A banned domain"))
 
     configSrc = DirectSrc <$> directConfig <|> (FileSrc <$> strOption (long "config-file"))
 
