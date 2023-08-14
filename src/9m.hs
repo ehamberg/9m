@@ -21,6 +21,7 @@ import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
 import Options.Applicative (Alternative (many, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
 import SafeBrowsing (checkUrl)
+import System.IO qualified as IO
 import System.Random (randomRIO)
 import Templates (aboutTpl, indexTpl, selfTpl, showTpl)
 import Web.Scotty
@@ -147,6 +148,7 @@ main :: IO ()
 main = do
   let opts = info (configSrc <**> helper) (fullDesc <> progDesc "9m Unicode URL shortener")
   config <- execParser opts >>= loadConfig
+  IO.hSetBuffering IO.stdout IO.LineBuffering
   print config
   runStdoutLoggingT $ withSqlitePool "9m.db" 10 $ \pool ->
     liftIO $ initialize pool >> scotty 7000 (nineM pool config)
