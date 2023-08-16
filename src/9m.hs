@@ -20,6 +20,7 @@ import DataLayer (ConnectionPool, findByKey, findByUrl, initialize, insert, reco
 import Database.Persist.Sqlite (withSqlitePool)
 import Network.HTTP.Types (StdMethod (GET, POST), status301, status400, status404, urlEncode)
 import Options.Applicative (Alternative (many, (<|>)), execParser, fullDesc, help, helper, info, long, optional, progDesc, short, strOption, (<**>))
+import Paths_9m
 import SafeBrowsing (checkUrl)
 import System.IO qualified as IO
 import System.Random (randomRIO)
@@ -142,7 +143,10 @@ nineM pool config = do
   -- static svg files
   addroute GET "/static/svg/:file" $ do
     setHeader "content-type" "image/svg+xml"
-    param "file" >>= file . ("/static/svg/" ++)
+    fileName <- ("svg/" <>) <$> param "file"
+    filePath <- liftIO $ getDataFileName fileName
+    liftIO $ print filePath
+    file filePath
 
 main :: IO ()
 main = do

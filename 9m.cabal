@@ -9,6 +9,9 @@ maintainer:    erlend@hamberg.no
 category:      Network
 tested-with:   GHC ==9.2.4
 build-type:    Simple
+data-dir: data
+data-files:
+  svg/*.svg
 
 executable 9m
   main-is:          9m.hs
@@ -16,6 +19,9 @@ executable 9m
     DataLayer
     SafeBrowsing
     Templates
+    Paths_9m
+  autogen-modules:
+    Paths_9m
 
   hs-source-dirs:   src
   default-language: GHC2021
