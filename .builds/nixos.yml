@@ -5,7 +5,7 @@ environment:
   NIX_CONFIG: "experimental-features = nix-command flakes"
 secrets:
   # cachix token
-  - af0cd5b7-9fbc-4301-acd4-fe41dcb0f5b3
+  - d307d709-ebdf-41fd-865a-deb08607ff3c
 sources:
   - https://git.sr.ht/~ehamberg/9m
 tasks:
