@@ -142,10 +142,10 @@ nineM pool config = do
 
   -- static svg files
   addroute GET "/static/svg/:file" $ do
-    setHeader "content-type" "image/svg+xml"
     fileName <- ("svg/" <>) <$> param "file"
     filePath <- liftIO $ getDataFileName fileName
-    liftIO $ print filePath
+    setHeader "content-type" "image/svg+xml"
+    setHeader "cache-control" "max-age=604800, stale-while-revalidate=86400"
     file filePath
 
 main :: IO ()
