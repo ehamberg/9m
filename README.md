@@ -1,8 +1,6 @@
 9m – Unicode-aware URL Shortener
 ================================
 
-[![builds.sr.ht status](https://builds.sr.ht/~ehamberg/9m.svg)](https://builds.sr.ht/~ehamberg/9m?)
-
 9m Unicode URL Shortener. Generates a shortcut from <http://9m.no> using two
 unicode characters, e.g. <http://9m.no/പ湛>.
 
@@ -17,3 +15,8 @@ To install/run:
 1. `stack build`
 2. `stack exec 9m`
 3. `open 'http://localhost:7000'`
+
+Available options:
+
+  - `--api-key ARG`: A SafeBrowsing API Key
+  - `-b/--banned ARG`: A banned domain (mutiple `-b` switches can be used to ban multiple domains)
